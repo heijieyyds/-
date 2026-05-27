@@ -6,15 +6,19 @@ SELECT 字段1,字段2,... FROM 表名;
 
 别名 AS
 as可省略，设置别名后最后输出的是别名
-字段 AS 别名 表名 AS 别名 -- . 就代表的，比如这里是 employee的employee_name SELECT e.employee_name AS 姓名, e.salary AS 工资 FROM employee e;
+字段 AS 别名 表名 AS 别名 
+-- . 就代表的
+
+比如这里是 employee的employee_name 
+SELECT e.employee_name AS 姓名, e.salary AS 工资 FROM employee e;
 条件查询
 WHERE
 计算符号：>、=、<=、!=、<>
 注意：数字不需要引号，字符都需要用单引号括起来
 SELECT 字段1,字段2,... FROM 表名 WHERE 条件表达式;
- SELECT employee_name,salary FROM employee WHERE salary >= 18000; 
+ ```SELECT employee_name,salary FROM employee WHERE salary >= 18000; ```
 //WHERE后面全是条件
-ELECT * FROM employee WHERE superior_number != 'EMP002';
+```SELECT * FROM employee WHERE superior_number != 'EMP002';```
 算数运算符
 +
 -
@@ -28,7 +32,8 @@ SELECT salary DIV 11, salary / 11 FROM employee;
 AND：并列条件都要满足
 OR：满足其中一个即可
 NOT：取反，AND取反是OR，OR取反是AND
-SELECT * FROM employee WHERE salary >= 18000 AND bonus >= 8000; SELECT * FROM employee WHERE salary >= 18000 OR bonus >= 8000; SELECT * FROM employee WHERE NOT(salary >= 18000) OR bonus >= 8000;
+SELECT * FROM employee WHERE salary >= 18000 AND bonus >= 8000;
+SELECT * FROM employee WHERE salary >= 18000 OR bonus >= 8000; SELECT * FROM employee WHERE NOT(salary >= 18000) OR bonus >= 8000;
 范围查询 
 BETWEEN AND
 范围区间是带等号的，等价于大于等于和小于等于的中间区间
