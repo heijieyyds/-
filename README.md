@@ -1,2 +1,404 @@
-# -
-mysql
+红色标题，蓝色老师的话，黄色自己的理解以及补充细节
+MYSQL
+是一种关系型数据库，存储的是二维表结构数据，采用SQL语言操作
+常见的关系型数据库：
+1.	MySQL
+2.	Oracle
+3.	SQL LITE
+4.	SQL SERVER 
+非关系型数据库：
+5.	Redis
+6.	Mongodb
+操作
+简单查询
+语法
+SELECT 字段1,字段2,... FROM 表名;
+SELECT actors ,FROM movie       //(某个表名某段)
+SELECT *FROM movie             //(某个表名整段)
+                                     操作
+别名 AS
+as可省略，设置别名后最后输出的是别名
+字段 AS 别名 表名 AS 别名 -- . 就代表的，比如这里是 employee的employee_name SELECT e.employee_name AS 姓名, e.salary AS 工资 FROM employee e;
+条件查询
+WHERE
+计算符号：>、=、<=、!=、<>
+注意：数字不需要引号，字符都需要用单引号括起来
+SELECT 字段1,字段2,... FROM 表名 WHERE 条件表达式;
+ SELECT employee_name,salary FROM employee WHERE salary >= 18000; 
+//WHERE后面全是条件
+ELECT * FROM employee WHERE superior_number != 'EMP002';
+算数运算符
++
+-
+*
+/
+%
+div：整除，出来的结果只要整数位，自动去掉小数位，并非是通过四舍五入的方式去掉
+SELECT salary DIV 11, salary / 11 FROM employee;
+
+条件运算符
+AND：并列条件都要满足
+OR：满足其中一个即可
+NOT：取反，AND取反是OR，OR取反是AND
+SELECT * FROM employee WHERE salary >= 18000 AND bonus >= 8000; SELECT * FROM employee WHERE salary >= 18000 OR bonus >= 8000; SELECT * FROM employee WHERE NOT(salary >= 18000) OR bonus >= 8000;
+范围查询 
+BETWEEN AND
+范围区间是带等号的，等价于大于等于和小于等于的中间区间
+SELECT * FROM employee WHERE salary >= 10000 AND salary <= 20000; SELECT * FROM employee WHERE salary BETWEEN 10000 AND 20000;
+//等价
+模糊条件 
+LIKE
+%：任意内容
+_：单字符匹配
+SELECT * FROM employee WHERE employee_name LIKE '李_'; SELECT *
+//李后面只能有一个字符
+FROM employee WHERE employee_name LIKE '李%';
+//李后面必须有内容
+SELECT movie_name AS 电影,actors AS 名字,release_date AS 时间 FROM movie WHERE actors LIKE '张%';
+//可以和取名字叠加组合
+NULL值判断
+IS NULL：判断当前条件的结果为NULL
+SELECT employee_name FROM employee WHERE superior_number IS NULL;
+IS NOT NULL：判断当前条件的结果不为NULL
+SELECT employee_name FROM employee WHERE superior_number IS NOT NULL;
+排序 ORDER BY
+ASC：默认排序方式，升序
+DESC：降序
+对于NULL值来说始终视为排序字段中的最小值
+SELECT 字段 FROM 表名 ORDER BY 需要排序的字段 排序规则（DESC/ASC）;
+SELECT * FROM employee ORDER BY bonus DESC;
+输出限制（分表）LIMIT
+LIMIT 行标号, 输出的行数;
+
+
+-- 从第四行开始输出三行
+SELECT * FROM cinema LIMIT 3,3;
+页码 N	每页条数 M	公式计算 (N*M)-M	最终 SQL 语句
+第 1 页	10	(1*10)-10 = 0	SELECT * FROM user LIMIT 0,10;
+第 2 页	10	(2*10)-10 = 10	SELECT * FROM user LIMIT 10,10;
+第 3 页	10	(3*10)-10 = 20	SELECT * FROM user LIMIT 20,10;
+LIMIT (N * M) - M, M
+分组查询 
+分组函数
+这个函数是为分组服务的
+ MAX：最大值
+ MIN：最小值 
+SUM：求和 AVG：平均数，除以总数的时候不会把NULL值计算进总数
+COUNT：计非NULL值的有效数
+SELECT MAX(salary), MIN(salary), SUM(bonus),AVG(bonus),SUM(bonus) / COUNT(bonus),SUM(bonus) / 30, COUNT(salary) FROM employee;
+分组使用
+规则：SELECT 后面的非聚合字段必须出现在GROUP BY后
+-- 按照member_level进行分组，并求分组中的user_id的有效值个数
+-- 求各个会员等级下的用户人数
+-- 查看全部年级中各个班的男生有多少位
+ SELECT grade,class,COUNT(student_id) FROM student WHERE gender = '男' GROUP BY class,grade;
+
+SELECT member_level,COUNT(user_id) FROM user GROUP BY member_level;
+HAVING
+是为GROUP BY 服务的，是做分组后过滤
+SELECT AVG(salary) AS avg_sal FROM employee GROUP BY department_id HAVING avg_sal > 16000;
+SQL语句的执行顺序（MySQL）
+完整查询关键字列表
+SELECT 
+FROM
+JOIN ON
+WHERE
+GROUP BY
+HAVING
+ORDER BY
+LIMIT;
+连接查询 
+笛卡尔积
+ 两张表的行与行之间的组合
+
+SELECT 字段 FROM 表1, 表2;
+SELECT 字段 FROM 表1 CROSS JOIN 表2;
+
+-- 查找星光影城（朝阳店）的影厅有哪些
+SELECT * FROM cinema c, hall h WHERE h.cinema_id = 1 AND c.cinema_id = 1;
+等值连接
+去除笛卡尔积中非关联的数据，只保留有关联的数据
+SELECT * FROM cinema c, hall h WHERE h.cinema_id = c.cinema_id AND c.cinema_id = 1;
+SELECT * FROM cinema c JOIN hall h ON h.cinema_id = c.cinema_id AND c.cinema_id = 1;
+风险：大表笛卡尔积会导致数据量爆炸，触发内存溢出或者查询超时的错误 合理场景：
+用于小表测试或需生成全组合
+ 性能优化：MySQL优化器会自动将小表作为驱动表，部分情况可能不理想我们可以使用STRAIGHT_JOIN强制驱
+小表匹配大表
+SELECT * FROM a JOIN b ON a.id = b.id STRAIGH
+外连接
+保留基准表的行，比如左外连接，以关键字左边的表作为基准表，关键字右边的表向基准表看齐，多余的裁掉，
+SELECT * FROM t_a LEFT JOIN t_b ON t_a.id = t_b.id;
+SELECT * FROM t_a RIGHT JOIN t_b ON t_a.id = t_b.id;
+ON：先过滤再关联
+WHERE：先关联再过滤
+在INNER JOIN情况下ON和WHERE性能差别不大，LEFT JOIN情况下绝对不能把右表的条件写在WHERE里，这样左连接查询会变成内连接查询
+子查询
+单行子查询
+SELECT id FROM employee WHERE employee_name = '杨芯叶';
+SELECT * FROM employee_attendance WHERE employee_id =1;
+SELECT * FROM employee_attendance WHERE employee_id = (SELECT id FROM employee WHERE employee_name = '张伟');
+将查张伟的id传递给employee_id作为结果判断
+-- 星光影城朝阳店的影厅数
+SELECT cinema_id FROM cinema WHERE cinema_name = '星光影城（朝阳店）';
+子语句判断结果
+SELECT COUNT(hall_id) FROM hall WHERE cinema_id = 1;
+---------------------------------------------------------------------------
+SELECT COUNT(hall_id) FROM hall WHERE cinema_id = (   SELECT cinema_id FROM cinema WHERE cinema_name = '星光影城（朝阳店）');
+
+SELECT student_id FROM student WHERE student_name = '张三' ;
+
+SELECT score FROM score WHERE student_id=1;
+
+SELECT * FROM score WHERE student_id=(SELECT student_id FROM student WHERE student_name = '张三');
+---------------------------------------------------------------------------
+SELECT c.course_name, t.score, s.student_name 
+FROM (
+    SELECT * 
+    FROM score 
+    WHERE student_id=(
+        SELECT student_id 
+        FROM student 
+        WHERE student_name = '张三')) t, 
+course c, student s 
+WHERE t.student_id = s.student_id AND t.course_id = c.course_id AND t.exam_type = '补考';
+取别名然后过滤然后判断迪卡图融合后还有条件可以加后面
+多行子查询
+子查询返回的内容是多行结果，需要依赖运算符 IN：
+将子查询的输出作为条件进行一一匹配 ANY：
+满足子查询任意值 ALL：
+满足子查询所有值
+SELECT id FROM employee WHERE salary >= 15000;
+单行不需要in
+SELECT * FROM employee_attendance WHERE employee_id  IN (SELECT id FROM employee WHERE salary >= 15000);
+多行用in
+
+SELECT * FROM score WHERE exam_type = '补考' AND  student_id IN(SELECT student_id FROM student WHERE class ='1班' AND grade = '大一');
+一定一定一定一定要看清楚输出表格，一般是的后面的
+IN和EXISTS
+本质功能是一样，关注点不一样，exists关注的是子查询结果，仅仅判断“子查询是否至少返回一行”，所以EXISTS是 不会受到NULL值影响的
+SELECT  * FROM score WHERE student_id IN (SELECT student_id FROM student WHERE grade = '大一' AND class='1班') AND exam_type='补考';
+函数
+字符串函数
+去重复函数
+DISTINCT
+SELECT DISTINCT(department_id) FROM employee
+每种结果展示1次比如id12345不可能出现两次2
+大小写控制 
+UPPER、LOWER
+SELECT UPPER(employee_name),LOWER(UPPER(employee_name)) FROM employee
+将name名字内容替换大小写是内容，中文字符无变化
+字符串拼接 
+CONCAT、CONCAT_WS
+CONCAT_WS：自动忽略NULL值的拼接，并且只在上一个非NULL值之间添加元素
+Null值直接变空白啥也没有
+ CONCAT：遇到NULL值整个结果都是NULL
+遇到null还是null值
+SELECT CONCAT('Dear ', employee_name) FROM employee; 在employee_name内容前面加上dear并执行concat
+SELECT CONCAT_WS('Dear ', bonus) FROM employee;
+---------------------------------------------------
+字符串截取 
+SUBSTR、SUBSTRING
+SUBSTR：从指定位置开始从左往右截取，并指定截取长度 SUBSTRING：截取位置填写正数是从左往右，支持填写负数那就是从右往左开始
+从第三个位置开始从左往右截取五个字符
+SELECT SUBSTR(CONCAT('Dear ', employee_name), 3 ,5),CONCAT('Dear ', employee_name) FROM employee;
+CONCAT加上dear所以SUBSTR从dear开始算ar开头5个字符空格占一个字符
+SELECT SUBSTRING(CONCAT('Dear ', employee_name), -5 ,5),CONCAT('Dear ', employee_name) FROM employee;
+符号是从右开始算dear依然算在里面
+--------------------------------------------------
+LEFT：截取左边开始的指定字符
+RIGHT：截取右边开始的指定字符
+SELECT LEFT(CONCAT('Dear ', employee_name),2) FROM employee;
+SELECT RIGHT(CONCAT('Dear ', employee_name),2) FROM employee;
+字面意思还是算dear字符
+---------------------------------------------------------------------------
+
+字符串查找 
+LOCATE、
+POSITION
+LOCATE：内容在字符串中第一次出现的位置
+SELECT LOCATE('o', 'hello world sql yxy');
+是在hello world sql yxy里面找o
+可以指定从第几个位置开始搜索
+SELECT LOCATE('o', 'hello world sql yxy', 6);
+从左往右第六个字符开始找o
+POSITION：和LOCATE用法一样只是语法不一样
+SELECT POSITION('o' IN 'hello world sql yxy');
+他不能指定位置开始查找
+--------------------------------------------------
+长度函数 
+CHAR_LENGTH
+字符数
+LENGTH
+字节数
+SELECT CHAR_LENGTH(employee_name), LENGTH(employee_name), employee_name FROM employ
+1个汉字3个字节或者1个字符
+填充函数 
+LPAD
+RPAD
+LPAD\RPAD：在字符串的左边（右边）填充内容，但是不能超过规定长度
+SLECT LPAD('YXY',10,'-*-*');
+结果-*-*YXY
+---------------------------------------------------
+去除前后字符串 -TRIM、LTRIM、RTRIM 
+TRIM：同时去除两边的指定
+ LTRIM/RTRIM：指定去除左边或者右边的字符串
+SELECT TRIM('*' FROM LPAD('YXY',10,'****'));
+在左边加上的同时消除两边的指定符号输出结果yxy
+SELECT TRIM('*' FROM '**--**abc**--**');
+输出结果--**abc**--
+字符串替换 - REPLACE、REGEXP_REPLACE
+REPLACE：将指定字符串里面的内容替换为其他
+SELECT REPLACE(TRIM('*' FROM '**--**abc**--**'),'*','&');
+*替换&
+REGEXP_REPLACE：使用正则表达式进行匹配替换
+SELECT REGEXP_REPLACE('AB12CD45', '[0-9]', '*');
+把 AB12CD45 里每一位数字都替换为 *输出结果AB**CD**
+数学函数
+四舍五入 - ROUND
+SELECT ROUND(3.978);
+结果4
+SELECT ROUND(3.978, 1);
+后面参数保留小数位4.0
+SELECT ROUND(3.973, 2);
+结果3.97
+截断 – TRUNCATE
+SELECT TRUNCATE(3.979, 2);
+保留2位小数结果3.97
+SELECT TRUNCATE(1234567.979, -1);  
+从小数点左边开始数，把小数点看成原点123456
+截断个位及以后
+SELECT TRUNCATE(1234567.979, -2);
+12345
+求余 - MOD
+SELECT MOD(10, 3);
+输出结果1
+取整 - CEIL、CELING、FLOOR
+CEIL、CELING：向上取整
+FLOOR：向下取整
+SELECT CEIL(2.123);
+结果3
+ SELECT FLOOR(2.123);
+结果2
+日期函数
+获取当前时间的日期函数
+函数名	功能	输出时间
+NOW()	返回系统时区的时间	yyyy-mm-dd hh:mm:ss.ms
+CURRENT_TIMESTAMP()	与NOW一样	yyyy-mm-dd hh:mm:ss.ms
+SYSTIMESTAMP()	返回系统时区的时间	yyyy-mm-dd hh:mm:ss.ms +utc
+CURRENT_DATE()	返回会话时区的日期	yyyy-mm-dd
+CURDATE()	CURRENT_DATE的简写	yyyy-mm-dd
+CURRENT_TIME()	返回会话时区的时间	hh:mm:ss
+CURTIME()	CURRENT_TIME的简写	hh:mm:ss
+LOCALTIMESTAMP()	返回会话的详细时间	yyyy-mm-dd hh:mm:ss.ms
+SELECT CURRENT_DATE();
+不用加参数
+日期加减 - DATE_ADD、DATE_SUB
+时间单位
+YEAR、MONTH、DAY、HOUR、MINUTE、SECOND、WEEK
+SELECT DATE_ADD('2023-01-01', INTERVAL 1 YEAR);
+加上1年2024-1-1
+当月最后一天 - LAST_DAY
+SELECT LAST_DAY(NOW());
+当前系统时间这月的最后一天
+时间抽取函数 - EXTRACT
+SELECT EXTRACT(YEAR FROM CURTIME());
+只要年
+类型转换函数
+字符串转时间 - STR_TO_DATE
+常用格式符
+格式符	说明	示例
+%Y	四位年份	2024
+%y	两位年份	24
+%m	月份（01-12）	08
+%c	月份（1-12）	8
+%M	月份英文全称	August
+%b	月份英文缩写	Aug
+%d	日期（01-31）	23
+%e	日期（1-31）	23
+%D	日期带英文后缀	23rd
+%H	24小时（00-23）	14
+%h	12小时（01-12）	02
+%i	分钟（00-59）	05
+%s	秒（00-59）	30
+%p	AM或PM	PM
+%W	星期几全称	Wednesday
+%a	星期几缩写	Wed
+%w	星期几数字（0=周日,6=周六）	3
+其他格式符
+%T - 时间（HH:mm:ss） → 14:05:30
+%r - 时间（12小时制含AM/PM）→ 02:05:30 PM
+%U - 第几周（周日为第一天,00-53）
+%u - 第几周（周一为第一天,00-53）
+%j - 年中的第几天（001-366）
+使用示例
+-- 解析字符串为日期
+ SELECT STR_TO_DATE('23-08-2024', '%d-%m-%Y');
+
+日期转字符串 - DATE_FORMAT()
+SELECT DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s');
+通用函数
+NULL值替换 - IFNULL
+把NULL值换为想要的数据
+SELECT IFNULL(bonus,0) FROM employee;
+把null替换成后面参数值0
+条件判断 - IF
+进行双分支判断，指定满足条件的输出和不满足条件的输出
+SELECT IF(bonus IS NOT NULL,'能获得奖金', '不能获得奖金'), bonus FROM employee; 
+SELECT IF(salary BETWEEN 20000 AND 30000,'gaoxing', 'dixing'), salary FROM employee;
+等值判断 - NULLIF
+值相等返回NULL，否则返回第一个值
+SELECT NULLIF(1,1); 
+返回null
+SELECT salary / NULLIF(IFNULL(bonus,0),0) FROM employee;
+如果bonus是null返回0,0和0作比较继续返回null
+第一个非NULL筛选 - COALESCE
+返回第一个非NULL的参数
+SELECT COALESCE(null,null,1,null,2);
+返回1
+多分支 - CASE WHEN
+CASE 字段 WHEN 条件值 THEN 输出值 WHEN 条件值 THEN 输出值 ... ELSE 都不满足的输出值 END 
+CASE 字段 
+    WHEN 条件值 THEN 输出值
+    WHEN 条件值 THEN 输出值
+    ...
+    ELSE 都不满足的输出值
+END
+
+if() {
+    
+} else if () {
+    
+} else {
+    
+}
+
+CASE department_id 
+    WHEN 10 THEN '财务部'
+    WHEN 20 THEN '金融部'
+    WHEN 30 THEN '人事部'
+    ELSE '后勤部'
+END
+
+if(department_id = 10) {
+    '财务部'
+} else if (department_id = 20) {
+    '金融部'
+} else if(department_id = 30) {
+    '人事部'
+} else {
+    '后勤部'
+}
+
+SELECT 
+  CASE department_id 
+    WHEN 1 THEN '财务部'
+    WHEN 2 THEN '金融部'
+    WHEN 3 THEN '人事部'
+    ELSE '后勤部'
+  END
+FROM employee;
+集合匹配函数 - IN
+SELECT * FROM score WHERE course_id = 2 OR course_id = 3 OR course_id = 4; 
+
+SELECT * FROM score WHERE course_id IN(2,3,4);
+两者作用相同
