@@ -1,8 +1,8 @@
 简单查询
 语法
 SELECT 字段1,字段2,... FROM 表名;
-SELECT actors ,FROM movie       //(某个表名某段)
-SELECT *FROM movie             //(某个表名整段)
+```SELECT actors ,FROM movie```       //(某个表名某段)
+```SELECT *FROM movie  ```           //(某个表名整段)
 
 别名 AS
 as可省略，设置别名后最后输出的是别名
